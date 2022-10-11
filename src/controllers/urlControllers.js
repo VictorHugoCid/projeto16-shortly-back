@@ -1,4 +1,4 @@
-import { connection } from '../database/db.js'
+import { connection } from '../database/js'
 import { nanoid } from 'nanoid'
 
 // model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
@@ -8,7 +8,7 @@ async function listUrl(req, res) {
     const { id } = req.params
 
     try {
-        const urlSearch = db.connection.query('SELECT * FROM ulrs WHERE id = $1', [id])
+        const urlSearch = connection.query('SELECT * FROM ulrs WHERE id = $1', [id])
         const url = urlSearch.rows[0]
         if (!url) {
             return res.status(404).send('esss url não existe')
@@ -37,7 +37,8 @@ async function createUrl(req, res) {
     }
 
     try {
-        const sessionSearch = await db.connection.query('SELECT * FROM sessions WHERE token = $1', [token])
+        // validate session
+        const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
         const session = sessionSearch.rows[0]
         if (!session) {
             return res.status(401).send('o usuário não está logado')
@@ -47,7 +48,7 @@ async function createUrl(req, res) {
         const shortUrl = nanoid();
 
         // insert
-        await db.connection.query('INSERT INTO urls ("userId", url, "shortUrl") VALUES ($1, $2, $3)', [session.userId, url, shortUrl])
+        await connection.query('INSERT INTO urls ("userId", url, "shortUrl") VALUES ($1, $2, $3)', [session.userId, url, shortUrl])
 
 
 
@@ -63,7 +64,7 @@ async function redirectUrl(req, res) {
     const { shortUrl } = req.params;
 
     try {
-        const shortUrlSearch = db.connection.query('SELECT * FROM urls WHERE "shortUrl" = $1', [shortUrl])
+        const shortUrlSearch = connection.query('SELECT * FROM urls WHERE "shortUrl" = $1', [shortUrl])
 
         if (!shortUrlSearch.rows[0]) {
             return res.sendStatus(404)
@@ -73,7 +74,7 @@ async function redirectUrl(req, res) {
         const visitCount = (shortUrlSearch.rows[0]).visitCount
 
 
-        await db.connection.query('UPDATE urls SET "visitCount" = $1 WHERE id = $2', [visitCount++, id])
+        await connection.query('UPDATE urls SET "visitCount" = $1 WHERE id = $2', [visitCount++, id])
 
         res.redirect(shortUrl)
 
@@ -91,17 +92,17 @@ async function deleteUrl(req, res) {
 
     try {
         // session verification
-        const sessionSearch = await db.connection.query('SELECT * FROM sessions WHERE token = $1', [token])
+        const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
         const session = sessionSearch.rows[0]
         if (!session) {
             return res.status(401).send('o usuário não está logado')
         }
-        const userSearch = await db.connection.query('SELECT * FROM users WHERE id = $1', [session.userId])
+        const userSearch = await connection.query('SELECT * FROM users WHERE id = $1', [session.userId])
         const user = userSearch.rwos[0]
         // 
 
         // url verification
-        const urlSearch = await db.connection.query('SELECT * FROM urls WHERE id = $1', [urlId])
+        const urlSearch = await connection.query('SELECT * FROM urls WHERE id = $1', [urlId])
         const url = urlSearch.rows[0]
         // 
         if(!url){
@@ -112,9 +113,8 @@ async function deleteUrl(req, res) {
             return res.status(401).send('essa url não pertence a esse usuário')
         }
 
-
         // delete
-        await db.connection.query('DELETE FROM urls WHERE id = $1', [urlId])
+        await connection.query('DELETE FROM urls WHERE id = $1', [urlId])
 
         res.sendStatus(204)
     } catch (error) {
@@ -125,10 +125,11 @@ async function deleteUrl(req, res) {
 }
 
 
+
 export {
     listUrl,
     createUrl,
     redirectUrl,
-
+    deleteUrl,
 
 }

@@ -1,7 +1,6 @@
 import { connection } from '../database/db.js'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid';
-import { db } from "../database/db.js";
 import { stripHtml } from 'string-strip-html';
 
 async function signUp(req, res) {
@@ -12,7 +11,7 @@ async function signUp(req, res) {
     // MIDDLEWARE - JOIS E VERIFICAR JÁ EXISTENCIA
 
     try {
-        await db.connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
+        await connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
 
         res.sendStatus(201)
 
@@ -33,7 +32,7 @@ async function signIn(req, res) {
         }
         const token = uuidv4()
         // -----------------------------------------------------
-        const userSearch = await db.connection.query('SELECT * FROM users WHERE email = $1', [email])
+        const userSearch = await connection.query('SELECT * FROM users WHERE email = $1', [email])
         const user = userSearch.rows[0]
 
         if (!user) {
@@ -41,7 +40,7 @@ async function signIn(req, res) {
         }
         // -----------------------------------------------------
 
-        await db.connection.query('INSERT INTO sessions (id, token) values ($1, $2) ', [user.id, token])
+        await connection.query('INSERT INTO sessions (id, token) values ($1, $2) ', [user.id, token])
 
         res.status(200).send(token)
 
