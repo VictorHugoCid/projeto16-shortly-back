@@ -1,10 +1,10 @@
 import express from 'express';
-import * as authController from '../controllers/authController.js';
+import * as authControllers from '../controllers/authControllers.js';
 import * as authMiddlewares from '../middlewares/authMiddlewares.js'
 
 const router = express.Router();
 
-router.post('/singin', authController.singin)
-router.post('/singup', authController.singup)
+router.post('/singin', authControllers.signIn)
+router.post('/singup', authControllers.signUp)
 
 export default router;
