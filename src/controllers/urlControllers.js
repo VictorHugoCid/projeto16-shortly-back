@@ -1,4 +1,4 @@
-import { connection } from '../database/js'
+import { connection } from '../database/db.js'
 import { nanoid } from 'nanoid'
 
 // model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
@@ -24,7 +24,7 @@ async function listUrl(req, res) {
 }
 
 async function createUrl(req, res) {
-    const { token } = req.headers.authorization?.replace('Bearer ', '')
+    const token = req.headers.authorization?.replace('Bearer ', '')
     const { url } = req.body
 
     if (!token) {
@@ -48,11 +48,11 @@ async function createUrl(req, res) {
         const shortUrl = nanoid();
 
         // insert
-        await connection.query('INSERT INTO urls ("userId", url, "shortUrl") VALUES ($1, $2, $3)', [session.userId, url, shortUrl])
+        await connection.query('INSERT INTO urls ("userId", url, "shortUrl", "visitCount") VALUES ($1, $2, $3, $4)', [session.userId, url, shortUrl, 0])
 
 
 
-        res.senStatus(201)
+        res.status(200).send(shortUrl)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -87,7 +87,7 @@ async function redirectUrl(req, res) {
 
 async function deleteUrl(req, res) {
     const urlId = req.params.id
-    const { token } = req.headers.authorization?.replace('Bearer ', '')
+    const token = req.headers.authorization?.replace('Bearer ', '')
 
 
     try {

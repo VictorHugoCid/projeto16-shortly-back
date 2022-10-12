@@ -1,6 +1,6 @@
 import express from 'express';
 import { listUrl, createUrl, redirectUrl, deleteUrl } from '../controllers/urlControllers.js';
-import * as urlMiddlewares from '../middlewares/urlMiddlewares.js'
+// import * as urlMiddlewares from '../middlewares/urlMiddlewares.js'
 
 const router = express.Router();
 
