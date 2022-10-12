@@ -1,6 +1,6 @@
 import express from 'express';
 import { signUp, signIn, logOut } from '../controllers/authControllers.js';
-import * as authMiddlewares from '../middlewares/authMiddlewares.js'
+// import * as authMiddlewares from '../middlewares/authMiddlewares.js'
 
 const router = express.Router();
 // console.log('authRouter')
