@@ -22,27 +22,38 @@ async function getUser(req, res) {
 
         // validate user
         const userSearch = await connection.query(`
-        SELECT
+        SELECT 
             users.id,
             users.name,
-            users."visitCount"
-            json_build_object(
-                'id', url.id, 
-                'shortUrl', url."shortUrl", 
-                'url', url.url, 
-                'visitCount', url."visitCount" 
-            ) as "shortenedUrls"
-        FROM users 
-        WHERE id = $1`, 
-        [session.userId]);
+            SUM("visitCount") as "visitCount"
+        FROM users JOIN urls ON users.id = urls."userId" 
+        WHERE users.id = $1
+        GROUP BY users.id`,
+            [session.userId]);
         const user = userSearch.rows[0]
 
-        if(!user){
+        if (!user) {
             return res.status(404).send('esse usuário não existe')
         }
 
+        const urlsSearch = await connection.query(`
+        SELECT 
+            urls.id,
+            urls."shortUrl",
+            urls.url,
+            urls."visitCount" 
+        FROM urls WHERE urls."userId" = $1`, [session.userId])
+        const shortenedUrls = urlsSearch.rows
 
-        res.status(200).send(user)
+
+        const response = {
+            user,
+            shortenedUrls
+        }
+        
+
+
+        res.status(200).send(response)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -50,30 +61,29 @@ async function getUser(req, res) {
     }
 }
 
-async function listRanking(req, res){
-
+async function listRanking(req, res) {
 
     try {
         const rankingSearch = await connection.query(`
-        SELECT
-            users.id, 
+        SELECT 
+            users.id,
             users.name,
-            COUNT(url) as "linksCount"
-        FROM users JOIN urls ON users.id = urls."userId"
+            COUNT(url) as "linksCount",
+            SUM("visitCount") as "visitCount"
+        FROM users JOIN urls ON users.id = urls."userId" 
         GROUP BY users.id
-        ORDER BY users.id ASC
+        ORDER BY COUNT(url) DESC
+        LIMIT 10
         `)
         const ranking = rankingSearch.rows
-        
 
         res.status(200).send(ranking)
-        
+
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
     }
 }
-
 
 export {
     getUser,

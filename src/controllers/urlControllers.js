@@ -30,6 +30,7 @@ async function createUrl(req, res) {
     if (!token) {
         return res.status(401).send('invalid token')
     }
+
     const httpRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
 
     if (!httpRegex.test(url)) {
@@ -52,13 +53,11 @@ async function createUrl(req, res) {
             return res.status(409).send('essa url já foi adicionada por esse usuário')
         }
 
-
         // criar shortUrl
         const shortUrl = nanoid();
 
         // insert
         await connection.query('INSERT INTO urls ("userId", url, "shortUrl", "visitCount") VALUES ($1, $2, $3, $4)', [session.userId, url, shortUrl, 0])
-
 
 
         res.status(200).send(shortUrl)
