@@ -11,7 +11,6 @@ async function signUp(req, res) {
     }
     const hashPassword = bcrypt.hashSync(password, 10)
 
-    // MIDDLEWARE - JOIS E VERIFICAR JÁ EXISTENCIA
 
     try {
         await connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
@@ -29,18 +28,17 @@ async function signIn(req, res) {
     const { email, password } = req.body
 
     try {
-        // -----------------------------------------------------
-        if (!email || !password) {
-            return res.status(422).send('Preencha todos os campos')
-        }
+        
         const token = uuidv4()
-        // -----------------------------------------------------
         const userSearch = await connection.query('SELECT * FROM users WHERE email = $1', [email])
         const user = userSearch.rows[0]
+        
+        const confirmPassword = await bcrypt.compare(password, user.password)
 
-        if (!user) {
-            return res.status(401).send('esse usuário não existe')
+        if (!user || !confirmPassword) {
+            return res.status(401).send('Usuário e/ou senha não encontrada')
         }
+        
         // -----------------------------------------------------
 
         await connection.query('INSERT INTO sessions ("userId", token) values ($1, $2) ', [user.id, token])
