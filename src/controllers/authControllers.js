@@ -69,9 +69,7 @@ async function logOut(req, res) {
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
-
     }
-
 }
 
 export {

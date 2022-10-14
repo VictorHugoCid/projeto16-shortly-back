@@ -31,11 +31,7 @@ async function createUrl(req, res) {
         return res.status(401).send('invalid token')
     }
 
-    const httpRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/;
-
-    if (!httpRegex.test(url)) {
-        return res.status(422).send('invalid url')
-    }
+    
 
     try {
         // validate session
