@@ -1,7 +1,6 @@
 import { connection } from '../database/db.js'
 import bcrypt from 'bcrypt'
-import { v4 as uuidv4 } from 'uuid';
-import { stripHtml } from 'string-strip-html';
+import jwt from 'jsonwebtoken'
 
 async function signUp(req, res) {
     const { name, email, password, confirmPassword } = req.body
@@ -10,7 +9,7 @@ async function signUp(req, res) {
         return res.status(422).send('As senhas não são iguais')
     }
     const hashPassword = bcrypt.hashSync(password, 10)
-
+ 
 
     try {
         await connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
@@ -29,7 +28,6 @@ async function signIn(req, res) {
 
     try {
         
-        const token = uuidv4()
         const userSearch = await connection.query('SELECT * FROM users WHERE email = $1', [email])
         const user = userSearch.rows[0]
         
@@ -40,11 +38,13 @@ async function signIn(req, res) {
         }
         
         // -----------------------------------------------------
+        const tokenJWT = jwt.sign({ 
+            id: user.id 
+        }, 'KEY');        
 
-        await connection.query('INSERT INTO sessions ("userId", token) values ($1, $2) ', [user.id, token])
-        // 13d411ad-1a7f-4a40-87a7-ddb88dcc58c7
+        await connection.query('INSERT INTO sessions ("userId", token) values ($1, $2) ', [user.id, tokenJWT])
 
-        res.status(200).send(token)
+        res.status(200).send(tokenJWT)
 
     } catch (error) {
         console.error(error)

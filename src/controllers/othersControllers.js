@@ -4,9 +4,12 @@ import { connection } from '../database/db.js'
 async function getUser(req, res) {
     const token = req.headers.authorization?.replace('Bearer ', '')
 
-    if (!token) {
+    const verifyToken = jwt.verify(token, 'KEY')
+    
+    if (!verifyToken) {
         return res.status(401).send('invalid token')
     }
+
 
     try {
         // validate session

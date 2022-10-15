@@ -1,10 +1,8 @@
 import { connection } from '../database/db.js'
 import { nanoid } from 'nanoid'
+import jwt from 'jsonwebtoken';
 
-// model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
-
-
-async function listUrl(req, res) {
+async function getUrlById(req, res) {
     const { id } = req.params
 
     try {
@@ -13,8 +11,6 @@ async function listUrl(req, res) {
         if (!url) {
             return res.status(404).send('esss url não existe')
         }
-
-
         res.status(200).send(url)
     } catch (error) {
         console.error(error)
@@ -27,11 +23,11 @@ async function createUrl(req, res) {
     const token = req.headers.authorization?.replace('Bearer ', '')
     const { url } = req.body
 
-    if (!token) {
+    const verifyToken = jwt.verify(token, 'KEY')
+    
+    if (!verifyToken) {
         return res.status(401).send('invalid token')
     }
-
-    
 
     try {
         // validate session
@@ -45,7 +41,7 @@ async function createUrl(req, res) {
         const urlSearch = await connection.query('SELECT * FROM urls WHERE url = $1 AND "userId" = $2', [url, session.userId])
         const urlInput = urlSearch.rows[0]
 
-        if(urlInput){
+        if (urlInput) {
             return res.status(409).send('essa url já foi adicionada por esse usuário')
         }
 
@@ -69,22 +65,21 @@ async function redirectUrl(req, res) {
 
     try {
         const shortUrlSearch = await connection.query('SELECT * FROM urls WHERE "shortUrl" = $1', [shortUrl])
-        // console.log(shortUrlSearch.rows)
 
         if (!shortUrlSearch.rows[0]) {
             return res.sendStatus(404)
         }
+
         // aumentar 1 na contagem de visitas do link (Update)
-        const id = (shortUrlSearch.rows[0]).id
         let visitCount = (shortUrlSearch.rows[0]).visitCount
         visitCount++
 
+        const id = (shortUrlSearch.rows[0]).id
+
         await connection.query('UPDATE urls SET "visitCount" = $1 WHERE id = $2', [visitCount++, id])
 
-
-        // RESOLVER O res.redirect(shortUrl)
-        res.send(shortUrlSearch.rows)
-
+        const url = (shortUrlSearch.rows[0]).url
+        res.redirect(url)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -96,6 +91,12 @@ async function deleteUrl(req, res) {
     const urlId = req.params.id
     const token = req.headers.authorization?.replace('Bearer ', '')
 
+    const verifyToken = jwt.verify(token, 'KEY')
+    
+    if (!verifyToken) {
+        return res.status(401).send('invalid token')
+    }
+
     try {
         // session verification
         const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
@@ -105,8 +106,6 @@ async function deleteUrl(req, res) {
         }
         const userSearch = await connection.query('SELECT * FROM users WHERE id = $1', [session.userId])
         const user = userSearch.rows[0]
-
-        // 
 
         // url verification
         const urlSearch = await connection.query('SELECT * FROM urls WHERE id = $1', [urlId])
@@ -134,7 +133,7 @@ async function deleteUrl(req, res) {
 
 
 export {
-    listUrl,
+    getUrlById,
     createUrl,
     redirectUrl,
     deleteUrl,
