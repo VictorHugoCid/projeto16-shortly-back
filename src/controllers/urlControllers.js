@@ -76,9 +76,10 @@ async function redirectUrl(req, res) {
 
         const id = (shortUrlSearch.rows[0]).id
 
-        await connection.query('UPDATE urls SET "visitCount" = $1 WHERE id = $2', [visitCount++, id])
+        await connection.query('UPDATE urls SET "visitCount" = $1 WHERE id = $2', [visitCount, id])
 
         const url = (shortUrlSearch.rows[0]).url
+
         res.redirect(url)
     } catch (error) {
         console.error(error)

@@ -14,7 +14,7 @@ server.use(authRouters);
 server.use(urlRouters);
 server.use(othersRouters);
 
-connection.query('SELECT * FROM sessions').then(() => console.log('banco conectado')).catch(err => console.log(err))
+connection.query('SELECT * FROM users').then(() => console.log('banco conectado')).catch(err => console.log(err))
 
 server.listen(4000, () => {
     console.log('Magic happens on 4000')
