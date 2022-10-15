@@ -2,27 +2,12 @@ import { connection } from '../database/db.js'
 
 
 async function getUser(req, res) {
-    const token = req.headers.authorization?.replace('Bearer ', '')
-
-    const verifyToken = jwt.verify(token, 'KEY')
-    
-    if (!verifyToken) {
-        return res.status(401).send('invalid token')
-    }
-
+    const { id } = res.locals
 
     try {
-        // validate session
-        const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
-        const session = sessionSearch.rows[0]
-        if (!session) {
-            return res.status(401).send('o usuário não está logado')
-        }
-        // ----------------------------------------------------------------------
-        const urlSearch = await connection.query('SELECT * FROM urls WHERE "userId" = $1', [session.userId])
-        const url = urlSearch.rows[1]
-        console.log(url)
-
+        // const urlSearch = await connection.query('SELECT * FROM urls WHERE "userId" = $1', [id])
+        // const url = urlSearch.rows[1]
+ 
         // validate user
         const userSearch = await connection.query(`
         SELECT 
@@ -32,7 +17,7 @@ async function getUser(req, res) {
         FROM users JOIN urls ON users.id = urls."userId" 
         WHERE users.id = $1
         GROUP BY users.id`,
-            [session.userId]);
+            [id]);
         const user = userSearch.rows[0]
 
         if (!user) {
@@ -45,16 +30,13 @@ async function getUser(req, res) {
             urls."shortUrl",
             urls.url,
             urls."visitCount" 
-        FROM urls WHERE urls."userId" = $1`, [session.userId])
+        FROM urls WHERE urls."userId" = $1`, [id])
         const shortenedUrls = urlsSearch.rows
-
 
         const response = {
             user,
             shortenedUrls
         }
-        
-
 
         res.status(200).send(response)
     } catch (error) {

@@ -1,6 +1,6 @@
 import { connection } from '../database/db.js'
 import { nanoid } from 'nanoid'
-import jwt from 'jsonwebtoken';
+
 
 async function getUrlById(req, res) {
     const { id } = req.params
@@ -20,39 +20,20 @@ async function getUrlById(req, res) {
 }
 
 async function createUrl(req, res) {
-    const token = req.headers.authorization?.replace('Bearer ', '')
     const { url } = req.body
 
-    const verifyToken = jwt.verify(token, 'KEY')
-    
-    if (!verifyToken) {
-        return res.status(401).send('invalid token')
-    }
+    const { id } = res.locals
+    console.log(id)
+
 
     try {
-        // validate session
-        const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
-        const session = sessionSearch.rows[0]
-        if (!session) {
-            return res.status(401).send('o usuário não está logado')
-        }
-
-        // verificar se a url já foi criada
-        const urlSearch = await connection.query('SELECT * FROM urls WHERE url = $1 AND "userId" = $2', [url, session.userId])
-        const urlInput = urlSearch.rows[0]
-
-        if (urlInput) {
-            return res.status(409).send('essa url já foi adicionada por esse usuário')
-        }
-
         // criar shortUrl
         const shortUrl = nanoid();
 
         // insert
-        await connection.query('INSERT INTO urls ("userId", url, "shortUrl", "visitCount") VALUES ($1, $2, $3, $4)', [session.userId, url, shortUrl, 0])
+        await connection.query('INSERT INTO urls ("userId", url, "shortUrl", "visitCount") VALUES ($1, $2, $3, $4)', [id, url, shortUrl, 0])
 
-
-        res.status(200).send(shortUrl)
+        res.status(200).send('created')
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -90,22 +71,10 @@ async function redirectUrl(req, res) {
 
 async function deleteUrl(req, res) {
     const urlId = req.params.id
-    const token = req.headers.authorization?.replace('Bearer ', '')
 
-    const verifyToken = jwt.verify(token, 'KEY')
-    
-    if (!verifyToken) {
-        return res.status(401).send('invalid token')
-    }
-
+    const { id } = res.locals
     try {
-        // session verification
-        const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
-        const session = sessionSearch.rows[0]
-        if (!session) {
-            return res.status(401).send('o usuário não está logado')
-        }
-        const userSearch = await connection.query('SELECT * FROM users WHERE id = $1', [session.userId])
+        const userSearch = await connection.query('SELECT * FROM users WHERE id = $1', [id])
         const user = userSearch.rows[0]
 
         // url verification
