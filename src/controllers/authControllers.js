@@ -4,9 +4,10 @@ import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv';
 dotenv.config()
 
-
 async function signUp(req, res) {
-    const { name, email, password, confirmPassword } = req.body
+    console.log('passou controller')
+    console.log(res.locals)
+    const { name, email, password, confirmPassword } = res.locals
 
     if (password !== confirmPassword) {
         return res.status(422).send('As senhas não são iguais')
