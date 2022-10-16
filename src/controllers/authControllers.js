@@ -1,6 +1,9 @@
 import { connection } from '../database/db.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv';
+dotenv.config()
+
 
 async function signUp(req, res) {
     const { name, email, password, confirmPassword } = req.body
@@ -9,7 +12,7 @@ async function signUp(req, res) {
         return res.status(422).send('As senhas não são iguais')
     }
     const hashPassword = bcrypt.hashSync(password, 10)
- 
+
 
     try {
         await connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
@@ -24,23 +27,12 @@ async function signUp(req, res) {
 }
 
 async function signIn(req, res) {
-    const { email, password } = req.body
 
+    const { user } = res.locals
     try {
-        
-        const userSearch = await connection.query('SELECT * FROM users WHERE email = $1', [email])
-        const user = userSearch.rows[0]
-        
-        const confirmPassword = await bcrypt.compare(password, user.password)
-
-        if (!user || !confirmPassword) {
-            return res.status(401).send('Usuário e/ou senha não encontrada')
-        }
-        
-        // -----------------------------------------------------
-        const tokenJWT = jwt.sign({ 
-            id: user.id 
-        }, 'KEY');        
+        const tokenJWT = jwt.sign({
+            id: user.id
+        }, process.env.TOKEN_SECRET);
 
         await connection.query('INSERT INTO sessions ("userId", token) values ($1, $2) ', [user.id, tokenJWT])
 
@@ -59,11 +51,11 @@ async function logOut(req, res) {
     try {
         const sessionSearch = await connection.query('SELECT * FROM sessions WHERE token = $1', [token])
         const session = sessionSearch.rows[0]
-        if(!session){
+        if (!session) {
             return res.status(404).send('o usuário não está mais logado')
         }
 
-        await connection.query('DELETE FROM sessions WHERE id = $1',[session.id])
+        await connection.query('DELETE FROM sessions WHERE id = $1', [session.id])
 
         res.status(200).send('logOut feito com sucesso')
     } catch (error) {

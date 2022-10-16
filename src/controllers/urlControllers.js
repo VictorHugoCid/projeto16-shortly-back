@@ -107,5 +107,4 @@ export {
     createUrl,
     redirectUrl,
     deleteUrl,
-
 }

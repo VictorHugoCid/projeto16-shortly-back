@@ -1,11 +1,13 @@
 import jwt from 'jsonwebtoken';
 import { connection } from '../database/db.js';
+import dotenv from 'dotenv';
+dotenv.config()
 
 
 async function validateSession(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '')
 
-    const verifyToken = jwt.verify(token, 'KEY')
+    const verifyToken = jwt.verify(token, process.env.TOKEN_SECRET)
 
     if (!verifyToken) {
         return res.status(401).send('invalid token')
