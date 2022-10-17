@@ -20,12 +20,9 @@ async function getUrlById(req, res) {
 }
 
 async function createUrl(req, res) {
-    console.log('entrou no controller')
     const { url } = req.body
 
     const { id } = res.locals
-    console.log(id)
-
 
     try {
         // criar shortUrl

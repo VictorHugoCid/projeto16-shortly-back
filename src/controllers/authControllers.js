@@ -26,13 +26,14 @@ async function signIn(req, res) {
 
     const { user } = res.locals
     try {
+        // token com 15 minutos de duração
         const tokenJWT = jwt.sign(
             {
                 id: user.id
             },
             process.env.TOKEN_SECRET,
             {
-                expiresIn: 30,
+                expiresIn: 15*60,
             }
         );
 
