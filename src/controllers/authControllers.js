@@ -5,25 +5,20 @@ import dotenv from 'dotenv';
 dotenv.config()
 
 async function signUp(req, res) {
-    console.log('passou controller')
-    console.log(res.locals)
-    const { name, email, password, confirmPassword } = res.locals
-
+    const { name, email, password, confirmPassword } = req.body
+    
     if (password !== confirmPassword) {
         return res.status(422).send('As senhas não são iguais')
     }
     const hashPassword = bcrypt.hashSync(password, 10)
 
-
     try {
         await connection.query('INSERT INTO users (name, email, password) VALUES ($1, $2, $3)', [name, email, hashPassword])
 
         res.sendStatus(201)
-
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
-
     }
 }
 

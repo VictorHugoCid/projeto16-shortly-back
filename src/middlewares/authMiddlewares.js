@@ -1,28 +1,24 @@
-import {connection} from '../database/db.js'
+import { connection } from '../database/db.js'
 import bcrypt from 'bcrypt'
 
 async function validateSignUp(req, res, next) {
-    console.log('passou validateSignUp')
-    
-    const {email} = req.body;
-    
+    const { email } = req.body;
 
     try {
         const userSearch = await connection.query('SELECT * FROM users WHERE email = $1', [email])
-        
+
         const user = userSearch.rows[0]
 
-        if(user){
+        if (user) {
             return res.status(409).send("Este email já está sendo utilizado")
         }
 
-        res.locals.user = user
+        res.locals.user = req.body
         next()
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
     }
-    next()
 }
 
 async function validateSignIn(req, res, next) {

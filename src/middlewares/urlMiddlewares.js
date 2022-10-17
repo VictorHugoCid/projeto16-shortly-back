@@ -1,6 +1,7 @@
 import { connection } from '../database/db.js';
 
 async function validateUrl(req, res, next) {
+    console.log('entrou no middleware')
     const { url } = req.body
     const token = req.headers.authorization?.replace('Bearer ', '')
 

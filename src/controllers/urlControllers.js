@@ -20,6 +20,7 @@ async function getUrlById(req, res) {
 }
 
 async function createUrl(req, res) {
+    console.log('entrou no controller')
     const { url } = req.body
 
     const { id } = res.locals
@@ -33,7 +34,7 @@ async function createUrl(req, res) {
         // insert
         await connection.query('INSERT INTO urls ("userId", url, "shortUrl", "visitCount") VALUES ($1, $2, $3, $4)', [id, url, shortUrl, 0])
 
-        res.status(200).send('created')
+        res.status(200).send(shortUrl)
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -81,7 +82,6 @@ async function deleteUrl(req, res) {
         const urlSearch = await connection.query('SELECT * FROM urls WHERE id = $1', [urlId])
         const url = urlSearch.rows[0]
         // 
-        console.log(urlSearch.rows)
         if (!url) {
             return res.status(404).send('essa url não existe')
         }

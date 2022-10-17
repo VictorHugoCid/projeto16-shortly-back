@@ -5,8 +5,6 @@ async function getUser(req, res) {
     const { id } = res.locals
 
     try {
-        // const urlSearch = await connection.query('SELECT * FROM urls WHERE "userId" = $1', [id])
-        // const url = urlSearch.rows[1]
  
         // validate user
         const userSearch = await connection.query(`
@@ -23,7 +21,7 @@ async function getUser(req, res) {
         if (!user) {
             return res.status(404).send('esse usuário não existe')
         }
-
+        
         const urlsSearch = await connection.query(`
         SELECT 
             urls.id,
@@ -33,8 +31,14 @@ async function getUser(req, res) {
         FROM urls WHERE urls."userId" = $1`, [id])
         const shortenedUrls = urlsSearch.rows
 
+        const userId = user.id;
+        const userName = user.name;
+        const userVisitCount = user.visitCount;
+
         const response = {
-            user,
+            userId,
+            userName,
+            userVisitCount,
             shortenedUrls
         }
 
