@@ -6,7 +6,7 @@ dotenv.config()
 
 async function signUp(req, res) {
     const { name, email, password, confirmPassword } = req.body
-    
+
     if (password !== confirmPassword) {
         return res.status(422).send('As senhas não são iguais')
     }
@@ -26,9 +26,15 @@ async function signIn(req, res) {
 
     const { user } = res.locals
     try {
-        const tokenJWT = jwt.sign({
-            id: user.id
-        }, process.env.TOKEN_SECRET);
+        const tokenJWT = jwt.sign(
+            {
+                id: user.id
+            },
+            process.env.TOKEN_SECRET,
+            {
+                expiresIn: 30,
+            }
+        );
 
         await connection.query('INSERT INTO sessions ("userId", token) values ($1, $2) ', [user.id, tokenJWT])
 
