@@ -1,5 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 import authRouters from './routers/authRouters.js';
 import urlRouters from './routers/urlRouters.js';
@@ -13,6 +16,6 @@ server.use(authRouters);
 server.use(urlRouters);
 server.use(othersRouters);
 
-server.listen(PORT, () => {
-    console.log('Magic happens on 4000')
+server.listen(process.env.PORT, () => {
+    console.log(`Magic happens on ${process.env.PORT}`);
 })
