@@ -6,7 +6,7 @@ dotenv.config()
 const { Pool } = pg;
 
 const connection = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.HEROKU_POSTGRESQL_PURPLE_URL,
     ssl: {
         rejectUnauthorized: false
     }
